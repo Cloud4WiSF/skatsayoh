@@ -335,7 +335,7 @@ module.exports = function(passport) {
                 // user already exists and is logged in, we have to link accounts
                 var user = req.user;
                 user.save({
-                    "facebook.id", profile.id,
+                    "facebook.id": profile.id,
                     "facebook.token" : token,
                     "facebook.name": profile.name.givenName + ' ' + profile.name.familyName,
                     "facebook.email": (profile.emails[0].value || '').toLowerCase()
