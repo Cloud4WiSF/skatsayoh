@@ -32,12 +32,12 @@ var dashboard = new ParseDashboard({
       "appName": process.env.APP_NAME || "Asherah"
     }
   ],
-  // "users": [
-  //   {
-  //     "user":"asherah",
-  //     "pass":"pass123"
-  //   }
-  // ],
+  "users": [
+    {
+      "user":"aa",
+      "pass":"aa"
+    }
+  ],
   "trustProxy": 1
 }, true);
 
