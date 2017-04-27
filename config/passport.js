@@ -5,7 +5,7 @@ var Parse       = require('parse/node');
 var router      = express.Router();
 
 Parse.initialize('APPLICATION_ID');
-Parse.serverURL = process.env.SERVER_URL;
+Parse.serverURL = 'http://skatsayoh.herokuapp.com/parse';//process.env.SERVER_URL;
 
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
