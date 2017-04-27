@@ -38,15 +38,16 @@ module.exports = function(passport) {
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
         console.log(">>>>>>> " + id + ", " + done);
-        var query = new Parse.Query('User');
-        query.get(id, {
-          success: function(user) {
-            done(null, user);
-          },
-          error: function(object, error) {
-            done(error, user);
-          }
-        });
+        done(null, id);
+        // var query = new Parse.Query('User');
+        // query.get(id, {
+        //   success: function(user) {
+        //     done(null, user);
+        //   },
+        //   error: function(object, error) {
+        //     done(error, user);
+        //   }
+        // });
 
         // User.findById(id, function(err, user) {
         //     done(err, user);
