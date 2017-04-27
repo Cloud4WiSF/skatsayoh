@@ -26,7 +26,7 @@ require('./config/passport')(passport); // pass passport for configuration
 var dashboard = new ParseDashboard({
   "apps": [
     {
-      "serverURL": process.env.SERVER_URL || 'http://localhost:1337/parse',
+      "serverURL": 'http://skatsayoh.herokuapp.com/parse', //process.env.SERVER_URL || 'http://localhost:1337/parse',
       "appId": process.env.APP_ID || 'APPLICATION_ID',
       "masterKey": process.env.MASTER_KEY || 'MASTER_KEY',
       "appName": process.env.APP_NAME || "Asherah"

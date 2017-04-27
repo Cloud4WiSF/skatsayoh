@@ -35,34 +35,26 @@ module.exports = function(passport) {
       Initilize passport user serialization
       */
     passport.serializeUser(function(user, done) {
-      done(null, user);
+        done(null, user.id);
     });
 
-    passport.deserializeUser(function(user, done) {
-      done(null, user);
+    // used to deserialize the user
+    passport.deserializeUser(function(id, done) {
+        console.log(">>>>>>> " + id + ", " + done);
+        var query = new Parse.Query('User');
+        query.get(id, {
+          success: function(user) {
+            done(null, user);
+          },
+          error: function(object, error) {
+            done(error, user);
+          }
+        });
+
+        // User.findById(id, function(err, user) {
+        //     done(err, user);
+        // });
     });
-    // passport.serializeUser(function(user, done) {
-    //     done(null, user.id);
-    // });
-
-    // // used to deserialize the user
-    // passport.deserializeUser(function(id, done) {
-    //     console.log(">>>>>>> " + id + ", " + done);
-    //     done(null, id);
-    //     // var query = new Parse.Query('User');
-    //     // query.get(id, {
-    //     //   success: function(user) {
-    //     //     done(null, user);
-    //     //   },
-    //     //   error: function(object, error) {
-    //     //     done(error, user);
-    //     //   }
-    //     // });
-
-    //     // User.findById(id, function(err, user) {
-    //     //     done(err, user);
-    //     // });
-    // });
 
     // =========================================================================
     // LOCAL LOGIN =============================================================
