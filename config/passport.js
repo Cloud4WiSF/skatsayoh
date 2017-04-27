@@ -126,14 +126,14 @@ module.exports = function(passport) {
         process.nextTick(function() {
             // if the user is not already logged in:
             if (!req.user) {
-                var query = new Parse.Query('User');
+                var query = new Parse.Query('_User');
                 query.get({ 'local.email' :  email }, {
                   success: function(user) {
                     // check to see if theres already a user with that email
                     if (user) {
                         return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
                     } else {
-
+                        console.log('Adding new user...');
                         var newUser = new Parse.User();
                         newUser.set("local.email", email);
                         newUser.set("local.password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
