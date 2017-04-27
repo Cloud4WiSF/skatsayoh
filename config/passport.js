@@ -4,7 +4,7 @@ var express     = require('express');
 var Parse       = require('parse');
 var router      = express.Router();
 
-Parse.initialize(process.env.APP_ID);
+Parse.initialize('APPLICATION_ID');
 Parse.serverURL = process.env.SERVER_URL;
 
 router.use(bodyParser.urlencoded({ extended: true }));

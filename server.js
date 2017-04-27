@@ -13,6 +13,7 @@ var morgan       = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var session      = require('express-session');
+var ParseDashboard    = require('parse-dashboard');
 
 var configDB = require('./config/database.js');
 
@@ -38,6 +39,27 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
+
+var dashboard = new ParseDashboard({
+  "apps": [
+    {
+      "serverURL": process.env.SERVER_URL || 'http://localhost:1337/parse',
+      "appId": process.env.APP_ID || 'APPLICATION_ID',
+      "masterKey": process.env.MASTER_KEY || 'MASTER_KEY',
+      "appName": process.env.APP_NAME || "Asherah"
+    }
+  ],
+  "users": [
+    {
+      "user":"asherah",
+      "pass":"pass123"
+    }
+  ],
+  "trustProxy": 1
+}, true);
+
+// Dashboard
+app.use('/dashboard', dashboard); // make the Parse Dashboard available at /dashboard
 
 // routes ======================================================================
 require('./app/routes.js')(app, passport); // load our routes and pass in our app and fully configured passport
