@@ -31,28 +31,38 @@ module.exports = function(passport) {
     // passport needs ability to serialize and unserialize users out of session
 
     // used to serialize the user for the session
+    /*
+      Initilize passport user serialization
+      */
     passport.serializeUser(function(user, done) {
-        done(null, user.id);
+      done(null, user);
     });
 
-    // used to deserialize the user
-    passport.deserializeUser(function(id, done) {
-        console.log(">>>>>>> " + id + ", " + done);
-        done(null, id);
-        // var query = new Parse.Query('User');
-        // query.get(id, {
-        //   success: function(user) {
-        //     done(null, user);
-        //   },
-        //   error: function(object, error) {
-        //     done(error, user);
-        //   }
-        // });
-
-        // User.findById(id, function(err, user) {
-        //     done(err, user);
-        // });
+    passport.deserializeUser(function(user, done) {
+      done(null, user);
     });
+    // passport.serializeUser(function(user, done) {
+    //     done(null, user.id);
+    // });
+
+    // // used to deserialize the user
+    // passport.deserializeUser(function(id, done) {
+    //     console.log(">>>>>>> " + id + ", " + done);
+    //     done(null, id);
+    //     // var query = new Parse.Query('User');
+    //     // query.get(id, {
+    //     //   success: function(user) {
+    //     //     done(null, user);
+    //     //   },
+    //     //   error: function(object, error) {
+    //     //     done(error, user);
+    //     //   }
+    //     // });
+
+    //     // User.findById(id, function(err, user) {
+    //     //     done(err, user);
+    //     // });
+    // });
 
     // =========================================================================
     // LOCAL LOGIN =============================================================
