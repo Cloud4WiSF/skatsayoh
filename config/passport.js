@@ -123,6 +123,7 @@ module.exports = function(passport) {
         if (email)
             email = email.toLowerCase(); // Use lower-case e-mails to avoid case-sensitive e-mail matching
 
+        console.log("Server>>>>>>>> " + Parse.serverURL);
         // asynchronous
         process.nextTick(function() {
             // if the user is not already logged in:
