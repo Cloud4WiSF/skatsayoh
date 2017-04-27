@@ -1,4 +1,6 @@
 // load all the things we need
+require('dotenv').config();
+
 var bodyParser  = require('body-parser');
 var express     = require('express');
 var Parse       = require('parse/node');
