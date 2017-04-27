@@ -6,8 +6,6 @@ var express     = require('express');
 var Parse       = require('parse/node');
 var router      = express.Router();
 
-Parse.initialize('APPLICATION_ID');
-Parse.serverURL = 'http://skatsayoh.herokuapp.com/parse';//process.env.SERVER_URL;
 
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
@@ -26,6 +24,8 @@ var configAuth = require('./auth'); // use this one for testing
 
 module.exports = function(passport) {
 
+    Parse.initialize('APPLICATION_ID');
+    Parse.serverURL = 'http://skatsayoh.herokuapp.com/parse';//process.env.SERVER_URL;
     // =========================================================================
     // passport session setup ==================================================
     // =========================================================================
@@ -71,6 +71,7 @@ module.exports = function(passport) {
         if (email)
             email = email.toLowerCase(); // Use lower-case e-mails to avoid case-sensitive e-mail matching
 
+        console.log("Server>>>>>>>> " + Parse.serverURL);
         // asynchronous
         process.nextTick(function() {
             var query = new Parse.Query('User');
