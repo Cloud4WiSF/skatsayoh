@@ -262,7 +262,7 @@ module.exports = function(passport) {
             if (!req.user) {
 
                 var query = new Parse.Query('User');
-                query.get({ 'facebook.id' : profile.id }, {
+                query.get({ 'authData.facebook.id' : profile.id }, {
                   success: function(user) {
                     // check to see if theres already a user with that email
                     if (user) {
