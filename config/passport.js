@@ -37,8 +37,8 @@ module.exports = function(passport) {
 
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
-        var query = new Parse.Query('_Role');
-        query.get(req.params.role_id, {
+        var query = new Parse.Query('User');
+        query.get(id, {
           success: function(user) {
             done(null, user);
           },
