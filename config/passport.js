@@ -77,14 +77,14 @@ module.exports = function(passport) {
             query.get({ 'local.email' :  email }, {
               success: function(user) {
                 if(!bcrypt.compareSync(user.get('password'), this.local.password)){
-                    done(null, false, req.flash('loginMessage', 'Oops! Wrong password.'));
+                    return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.'));
                 }
                 else {
-                    done(null, user);
+                    return done(null, user);
                 }
               },
               error: function(object, err) {
-                done(null, false, req.flash('loginMessage', 'No user found.'))
+                return done(null, false, req.flash('loginMessage', 'No user found.'))
                 // return done(err);
               }
             });
