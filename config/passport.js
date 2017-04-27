@@ -46,10 +46,10 @@ module.exports = function(passport) {
         var query = new Parse.Query('User');
         query.get(id, {
           success: function(user) {
-            done(null, user);
+            return done(null, user);
           },
           error: function(object, error) {
-            done(error, user);
+            return done(error, user);
           }
         });
 
@@ -259,6 +259,7 @@ module.exports = function(passport) {
                 query.get({ 'facebook.id' : profile.id }, {
                   success: function(user) {
                     // check to see if theres already a user with that email
+                    console.log("Hello user: " + JSON.stringify(user));
                     if (user) {
                         // if there is a user id already but no token (user was linked at one point and then removed)
                         if (!user.facebook.token) {
