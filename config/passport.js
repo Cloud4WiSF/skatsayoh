@@ -172,7 +172,7 @@ module.exports = function(passport) {
                            console.log(">>User session token: " + user.attributes.sessionToken);
                          },
                          error: function(user, error) {
-                           alert("User cancelled the Facebook login or did not fully authorize. Error =" + error.message);
+                           console.log("User cancelled the Facebook login or did not fully authorize. Error =" + error.message);
                          }
                      });
 
