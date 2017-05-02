@@ -158,9 +158,7 @@ module.exports = function(passport) {
                   },
                   error: function(object, error) {
                     console.log(">>>Nope world");
-                        console.log('will try adding new user...');
-
-                    
+                    console.log('will try adding new user...');
 
                     var newUser = new Parse.User();
                     newUser.set("username", email);
@@ -169,18 +167,15 @@ module.exports = function(passport) {
                     newUser.set("local.password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
 
                     newUser.signUp(null, {
-                      success: function(user) {
-                    console.log(">>>yey world");
-                        return done(null, user);
-                      },
-                      error: function(user, error) {
-                    console.log(">>>Nope world agen " + JSON.stringify(error));
-                        return done(error);
-                      }
+                        success: function(user) {
+                            console.log(">>>yey world");
+                            return done(null, user);
+                        },
+                        error: function(user, error) {
+                            console.log(">>>Nope world agen " + JSON.stringify(error));
+                            return done(error);
+                        }
                     });
-
-
-                    return done(error);
                   }
                 });
 
@@ -311,60 +306,79 @@ module.exports = function(passport) {
                         }
                     } else {
 
-                        // var newUser = new Parse.User();
-                        // newUser.set("facebook.id", profile.id);
-                        // newUser.set("facebook.token", token);
-                        // newUser.set("facebook.name", profile.name.givenName + ' ' + profile.name.familyName);
-                        // newUser.set("facebook.email", (profile.emails[0].value || '').toLowerCase());
+                        var newUser = new Parse.User();
+                        newUser.set("username", profile.id);
+                        newUser.set("password", token);
+                        newUser.set("facebook.id", profile.id);
+                        newUser.set("facebook.token", token);
+                        newUser.set("facebook.name", profile.name.givenName + ' ' + profile.name.familyName);
+                        newUser.set("facebook.email", (profile.emails[0].value || '').toLowerCase());
 
-                        // newUser.signUp(null, {
-                        //   success: function(user) {
-                        //     return done(null, user);
-                        //   },
-                        //   error: function(user, error) {
-                        //     return done(error);
-                        //   }
-                        // });
+                        newUser.signUp(null, {
+                          success: function(user) {
+                            return done(null, user);
+                          },
+                          error: function(user, error) {
+                            return done(error);
+                          }
+                        });
 
-                        Parse.FacebookUtils.init({ // this line replaces FB.init({
-                            appId      : '251840548555589', // Facebook App ID
-                            cookie     : true, // enable cookies to allow Parse to access the session
-                            xfbml      : true
-                         });
+                        // Parse.FacebookUtils.init({ // this line replaces FB.init({
+                        //     appId      : '251840548555589', // Facebook App ID
+                        //     cookie     : true, // enable cookies to allow Parse to access the session
+                        //     xfbml      : true
+                        //  });
 
-                         Parse.FacebookUtils.logIn(null, {
-                             success: function(user) {
-                               console.log("im here>> " + JSON.stringify(user));
-                               console.log(">>User session token: " + user.attributes.sessionToken);
-                               return done(null, user);
-                             },
-                             error: function(user, error) {
-                               console.log("User cancelled the Facebook login or did not fully authorize. Error =" + error.message);
-                               return done(error);
-                             }
-                         });
+                        //  Parse.FacebookUtils.logIn(null, {
+                        //      success: function(user) {
+                        //        console.log("im here>> " + JSON.stringify(user));
+                        //        console.log(">>User session token: " + user.attributes.sessionToken);
+                        //        return done(null, user);
+                        //      },
+                        //      error: function(user, error) {
+                        //        console.log("User cancelled the Facebook login or did not fully authorize. Error =" + error.message);
+                        //        return done(error);
+                        //      }
+                        //  });
                     }
                   },
                   error: function(object, error) {
 
-                           console.log("FB errors>> " + JSON.stringify(error) + ", create new user");
-                    Parse.FacebookUtils.init({ // this line replaces FB.init({
-                        appId      : '251840548555589', // Facebook App ID
-                        cookie     : true, // enable cookies to allow Parse to access the session
-                        xfbml      : true
-                     });
+                    console.log("FB errors>> " + JSON.stringify(error) + ", create new user");
+                    var newUser = new Parse.User();
+                    newUser.set("username", profile.id);
+                    newUser.set("password", token);
+                    newUser.set("facebook.id", profile.id);
+                    newUser.set("facebook.token", token);
+                    newUser.set("facebook.name", profile.name.givenName + ' ' + profile.name.familyName);
+                    newUser.set("facebook.email", (profile.emails[0].value || '').toLowerCase());
 
-                     Parse.FacebookUtils.logIn(null, {
-                         success: function(user) {
-                           console.log("im here>> " + JSON.stringify(user));
-                           console.log(">>User session token: " + user.attributes.sessionToken);
-                           return done(null, user);
-                         },
-                         error: function(user, error) {
-                           console.log("User cancelled the Facebook login or did not fully authorize. Error =" + error.message);
-                           return done(error);
-                         }
-                     });
+                    newUser.signUp(null, {
+                      success: function(user) {
+                        return done(null, user);
+                      },
+                      error: function(user, error) {
+                        return done(error);
+                      }
+                    });
+
+                    // Parse.FacebookUtils.init({ // this line replaces FB.init({
+                    //     appId      : '251840548555589', // Facebook App ID
+                    //     cookie     : true, // enable cookies to allow Parse to access the session
+                    //     xfbml      : true
+                    //  });
+
+                    //  Parse.FacebookUtils.logIn(null, {
+                    //      success: function(user) {
+                    //        console.log("im here>> " + JSON.stringify(user));
+                    //        console.log(">>User session token: " + user.attributes.sessionToken);
+                    //        return done(null, user);
+                    //      },
+                    //      error: function(user, error) {
+                    //        console.log("User cancelled the Facebook login or did not fully authorize. Error =" + error.message);
+                    //        return done(error);
+                    //      }
+                    //  });
 
                     return done(error);
                   }
