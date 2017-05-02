@@ -164,6 +164,7 @@ module.exports = function(passport) {
 
                     var newUser = new Parse.User();
                     newUser.set("username", email);
+                    newUser.set("password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
                     newUser.set("local.email", email);
                     newUser.set("local.password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
 
@@ -222,6 +223,8 @@ module.exports = function(passport) {
                     } else {
 
                         var newUser = new Parse.User();
+                        newUser.set("username", email);
+                        newUser.set("password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
                         newUser.set("local.email", email);
                         newUser.set("local.password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
 
