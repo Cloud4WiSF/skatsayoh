@@ -9,6 +9,7 @@ var router      = express.Router();
 
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
+var ParseStrategy = require('passport-parse');
 
 var LocalStrategy    = require('passport-local').Strategy;
 var FacebookStrategy = require('passport-facebook').Strategy;
@@ -24,7 +25,10 @@ Parse.serverURL = 'http://skatsayoh.herokuapp.com/parse';//process.env.SERVER_UR
 // load the auth variables
 var configAuth = require('./auth'); // use this one for testing
 
+var parseStrategy = new ParseStrategy({parseClient: Parse});
+
 module.exports = function(passport) {
+    passport.use(parseStrategy);
 
     // =========================================================================
     // passport session setup ==================================================
@@ -165,7 +169,7 @@ module.exports = function(passport) {
                         return done(null, user);
                       },
                       error: function(user, error) {
-                    console.log(">>>Nope world agen " + error);
+                    console.log(">>>Nope world agen " + JSON.stringify(error));
                         return done(error);
                       }
                     });
