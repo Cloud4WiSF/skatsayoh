@@ -20,6 +20,7 @@
     "morgan": "~1.7.0",
     "parse": "^1.9.2",
     "parse-dashboard": "^1.0.25",
+    "parse-server": "^2.3.8",
     "passport": "~0.3.2",
     "passport-facebook": "^2.1.1",
     "passport-google-oauth": "^1.0.0",
