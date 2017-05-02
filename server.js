@@ -14,6 +14,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var session      = require('express-session');
 var ParseDashboard    = require('parse-dashboard');
+var ParseServer       = require('parse-server').ParseServer;
 
 var configDB = require('./config/database.js');
 
