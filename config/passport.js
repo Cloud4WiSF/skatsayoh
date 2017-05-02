@@ -25,7 +25,7 @@ var configAuth = require('./auth'); // use this one for testing
 module.exports = function(passport) {
 
     Parse.initialize('APPLICATION_ID');
-    Parse.serverURL = 'http://skatsayoh.herokuapp.com/';//process.env.SERVER_URL;
+    Parse.serverURL = 'http://skatsayoh.herokuapp.com/parse';//process.env.SERVER_URL;
     // =========================================================================
     // passport session setup ==================================================
     // =========================================================================
