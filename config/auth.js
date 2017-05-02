@@ -6,7 +6,7 @@ module.exports = {
     'facebookAuth' : {
         'clientID'        : '251840548555589', // your App ID
         'clientSecret'    : 'fda9fd21cb4c4a8a435877239bb67b7b', // your App Secret
-        'callbackURL'     : 'http://skatsayoh.herokuapp.com/auth/facebook/callback',
+        'callbackURL'     : 'http://skatsayoh.herokuapp.com/auth/callback/facebook',
         'profileURL': 'https://graph.facebook.com/v2.5/me?fields=first_name,last_name,email'
 
     },
