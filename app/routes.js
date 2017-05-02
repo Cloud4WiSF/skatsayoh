@@ -23,11 +23,11 @@ module.exports = function(app, passport) {
 
 
     var api = new ParseServer({
-      databaseURI: databaseUri || 'mongodb://heroku_8dh30glq:t01pfrde5j5lfpkln7po6189gq@ds123331.mlab.com:23331/heroku_8dh30glq', // 'mongodb://localhost:27017/dev',
-      cloud: process.env.CLOUD_CODE_MAIN || __dirname + '/main.js',
-      appId: process.env.APP_ID || 'APPLICATION_ID',
-      masterKey: process.env.MASTER_KEY || 'MASTER_KEY', //Add your master key here. Keep it secret!
-      serverURL: process.env.SERVER_URL || 'https://skatsayoh.herokuapp.com/parse'  // Don't forget to change to https if needed
+      databaseURI: 'mongodb://heroku_8dh30glq:t01pfrde5j5lfpkln7po6189gq@ds123331.mlab.com:23331/heroku_8dh30glq', // 'mongodb://localhost:27017/dev',
+      cloud: __dirname + '/main.js',
+      appId: 'APPLICATION_ID',
+      masterKey: 'MASTER_KEY', //Add your master key here. Keep it secret!
+      serverURL: 'https://skatsayoh.herokuapp.com/parse'  // Don't forget to change to https if needed
     });
 
 
