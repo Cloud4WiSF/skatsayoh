@@ -21,31 +21,36 @@ var configDB = require('./config/database.js');
 mongoose.connect(configDB.url); // connect to our database
 
 
-// ---------- Session Handling ---------- //
-var ExpressSession = require('express-session');
-var MongoDBStore = require('connect-mongodb-session')(ExpressSession);
-var mongodbSessionstore = new MongoDBStore(
-      {
-        uri: 'mongodb://heroku_xz7n8dv2:c5aregj2ep3e4jcabj157tam7u@ds119081.mlab.com:19081/heroku_xz7n8dv2',
-        collection: 'session'
-      });
+// // ---------- Session Handling ---------- //
+// var ExpressSession = require('express-session');
+// var MongoDBStore = require('connect-mongodb-session')(ExpressSession);
+// var mongodbSessionstore = new MongoDBStore(
+//       {
+//         uri: 'mongodb://heroku_xz7n8dv2:c5aregj2ep3e4jcabj157tam7u@ds119081.mlab.com:19081/heroku_xz7n8dv2',
+//         collection: 'session'
+//       });
 
-// Catch errors
-mongodbSessionstore.on('error', function(error) {
-  console.log("MongoDBStore error.");
-});
+// // Catch errors
+// mongodbSessionstore.on('error', function(error) {
+//   console.log("MongoDBStore error.");
+// });
 
-var session = ExpressSession({
-  store: mongodbSessionstore,
-  key: 'jsessionid',
-  secret: '8E76A885B00B491E54BA9311A90173114FA9B4C9143638178F5A1598AD2D28DE',
-  resave: false,
-  saveUninitialized: false,
-  maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
-});
+// var session = ExpressSession({
+//   store: mongodbSessionstore,
+//   key: 'jsessionid',
+//   secret: '8E76A885B00B491E54BA9311A90173114FA9B4C9143638178F5A1598AD2D28DE',
+//   resave: false,
+//   saveUninitialized: false,
+//   maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+// });
 
-
-require('./config/passport')(passport); // pass passport for configuration
+// app.set('trust proxy', 1) // trust first proxy 
+// app.use(session({
+//   secret: 'keyboard cat',
+//   resave: false,
+//   saveUninitialized: true,
+//   cookie: { secure: true }
+// }))
 
 
 
@@ -61,12 +66,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set('view engine', 'ejs'); // set up ejs for templating
 
+app.set('trust proxy', 1) // trust first proxy 
 // required for passport
-// app.use(session({
-//     secret: 'ilovescotchscotchyscotchscotch', // session secret
-//     resave: true,
-//     saveUninitialized: true
-// }));
+ app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true }
+ }));
 
 // Authentication configuration
 app.use(session);
@@ -77,6 +84,7 @@ app.use(flash()); // use connect-flash for flash messages stored in session
 
 
 
+require('./config/passport')(passport); // pass passport for configuration
 
 
 // var dashboard = new ParseDashboard({
