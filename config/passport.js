@@ -153,6 +153,24 @@ module.exports = function(passport) {
                   },
                   error: function(object, error) {
                     console.log(">>>Nope world");
+                        console.log('will try adding new user...');
+
+                    var newUser = new Parse.User();
+                    newUser.set("local.email", email);
+                    newUser.set("local.password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
+
+                    newUser.signUp(null, {
+                      success: function(user) {
+                    console.log(">>>yey world");
+                        return done(null, user);
+                      },
+                      error: function(user, error) {
+                    console.log(">>>Nope world agen");
+                        return done(err);
+                      }
+                    });
+
+
                     return done(err);
                   }
                 });
