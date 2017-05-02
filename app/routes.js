@@ -24,7 +24,7 @@ module.exports = function(app, passport) {
 
     var api = new ParseServer({
       databaseURI: 'mongodb://heroku_8dh30glq:t01pfrde5j5lfpkln7po6189gq@ds123331.mlab.com:23331/heroku_8dh30glq', // 'mongodb://localhost:27017/dev',
-      cloud: './main.js',
+      cloud: __dirname + 'app/main.js',
       appId: 'APPLICATION_ID',
       masterKey: 'MASTER_KEY', //Add your master key here. Keep it secret!
       serverURL: 'https://skatsayoh.herokuapp.com/parse'  // Don't forget to change to https if needed
@@ -71,7 +71,7 @@ module.exports = function(app, passport) {
         app.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' }));
 
         // handle the callback after facebook has authenticated the user
-        app.get('/auth/facebook/callback',
+        app.get('/auth/callback/facebook',
             passport.authenticate('facebook', {
                 successRedirect : '/profile',
                 failureRedirect : '/'
