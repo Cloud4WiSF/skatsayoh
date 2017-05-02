@@ -16,6 +16,8 @@ var TwitterStrategy  = require('passport-twitter').Strategy;
 var GoogleStrategy   = require('passport-google-oauth').OAuth2Strategy;
 var bcrypt   = require('bcrypt-nodejs');
 
+Parse.initialize('APPLICATION_ID', 'JAVASCRIPT_KEY', 'MASTER_KEY');
+Parse.serverURL = 'http://skatsayoh.herokuapp.com/parse';//process.env.SERVER_URL;
 // load up the user model
 //var User       = require('../app/models/user');
 
@@ -24,8 +26,6 @@ var configAuth = require('./auth'); // use this one for testing
 
 module.exports = function(passport) {
 
-    Parse.initialize('APPLICATION_ID');
-    Parse.serverURL = 'http://skatsayoh.herokuapp.com/parse';//process.env.SERVER_URL;
     // =========================================================================
     // passport session setup ==================================================
     // =========================================================================
@@ -128,10 +128,11 @@ module.exports = function(passport) {
         process.nextTick(function() {
             // if the user is not already logged in:
             if (!req.user) {
-                var query = new Parse.Query('_User');
+                var query = new Parse.Query('User');
                 query.get({ 'local.email' :  email }, {
                   success: function(user) {
                     // check to see if theres already a user with that email
+                    console.log(">>>Success");
                     if (user) {
                         return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
                     } else {
@@ -151,6 +152,7 @@ module.exports = function(passport) {
                     }
                   },
                   error: function(object, error) {
+                    console.log(">>>Nope world");
                     return done(err);
                   }
                 });
