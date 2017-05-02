@@ -1,5 +1,6 @@
 
     var ParseServer       = require('parse-server').ParseServer;
+var ParseDashboard    = require('parse-dashboard');
 
 module.exports = function(app, passport) {
 
@@ -36,6 +37,26 @@ module.exports = function(app, passport) {
     // Serve the Parse API on the /parse URL prefix
     app.use('/parse', api);
 
+    var dashboard = new ParseDashboard({
+      "apps": [
+        {
+          "serverURL": 'https://skatsayoh.herokuapp.com/parse',
+          "appId": 'APPLICATION_ID',
+          "masterKey": 'MASTER_KEY',
+          "appName": "Asherah"
+        }
+      ],
+      "users": [
+        {
+          "user":"asherah",
+          "pass":"pass123"
+        }
+      ],
+      "trustProxy": 1
+    }, true);
+
+    // Dashboard
+    app.use('/dashboard', dashboard); // make the Parse Dashboard available at /dashboard
 // =============================================================================
 // AUTHENTICATE (FIRST LOGIN) ==================================================
 // =============================================================================
