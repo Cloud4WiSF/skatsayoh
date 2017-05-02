@@ -19,6 +19,7 @@ var bcrypt   = require('bcrypt-nodejs');
 
 Parse.initialize('APPLICATION_ID', 'JAVASCRIPT_KEY', 'MASTER_KEY');
 Parse.serverURL = 'http://skatsayoh.herokuapp.com/parse';//process.env.SERVER_URL;
+Parse.User.enableUnsafeCurrentUser();
 // load up the user model
 //var User       = require('../app/models/user');
 
@@ -159,20 +160,37 @@ module.exports = function(passport) {
                     console.log(">>>Nope world");
                         console.log('will try adding new user...');
 
-                    var newUser = new Parse.User();
-                    newUser.set("local.email", email);
-                    newUser.set("local.password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
+                    Parse.FacebookUtils.init({ // this line replaces FB.init({
+                        appId      : '251840548555589', // Facebook App ID
+                        cookie     : true, // enable cookies to allow Parse to access the session
+                        xfbml      : true
+                     });
 
-                    newUser.signUp(null, {
-                      success: function(user) {
-                    console.log(">>>yey world");
-                        return done(null, user);
-                      },
-                      error: function(user, error) {
-                    console.log(">>>Nope world agen " + JSON.stringify(error));
-                        return done(error);
-                      }
-                    });
+                     Parse.FacebookUtils.logIn(null, {
+                         success: function(user) {
+                           console.log("im here>> " + JSON.stringify(user));
+                           console.log(">>User session token: " + user.attributes.sessionToken);
+                         },
+                         error: function(user, error) {
+                           alert("User cancelled the Facebook login or did not fully authorize. Error =" + error.message);
+                         }
+                     });
+
+                    // var newUser = new Parse.User();
+                    // newUser.set("username", email);
+                    // newUser.set("local.email", email);
+                    // newUser.set("local.password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
+
+                    // newUser.signUp(null, {
+                    //   success: function(user) {
+                    // console.log(">>>yey world");
+                    //     return done(null, user);
+                    //   },
+                    //   error: function(user, error) {
+                    // console.log(">>>Nope world agen " + JSON.stringify(error));
+                    //     return done(error);
+                    //   }
+                    // });
 
 
                     return done(error);
