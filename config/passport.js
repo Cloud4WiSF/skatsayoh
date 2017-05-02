@@ -84,9 +84,9 @@ module.exports = function(passport) {
                     return done(null, user);
                 }
               },
-              error: function(object, err) {
-                return done(null, false, req.flash('loginMessage', 'No user found.'))
-                // return done(err);
+              error: function(object, error) {
+                return done(null, false, req.flash('loginMessage', 'No user found. ' + error))
+                // return done(error);
               }
             });
 
@@ -146,7 +146,7 @@ module.exports = function(passport) {
                             return done(null, user);
                           },
                           error: function(user, error) {
-                            return done(err);
+                            return done(error);
                           }
                         });
                     }
@@ -165,13 +165,13 @@ module.exports = function(passport) {
                         return done(null, user);
                       },
                       error: function(user, error) {
-                    console.log(">>>Nope world agen");
-                        return done(err);
+                    console.log(">>>Nope world agen " + error);
+                        return done(error);
                       }
                     });
 
 
-                    return done(err);
+                    return done(error);
                   }
                 });
 
@@ -222,13 +222,13 @@ module.exports = function(passport) {
                             return done(null, user);
                           },
                           error: function(user, error) {
-                            return done(err);
+                            return done(error);
                           }
                         });
                     }
                   },
                   error: function(object, error) {
-                    return done(err);
+                    return done(error);
                   }
                 });
 
@@ -311,13 +311,13 @@ module.exports = function(passport) {
                             return done(null, user);
                           },
                           error: function(user, error) {
-                            return done(err);
+                            return done(error);
                           }
                         });
                     }
                   },
                   error: function(object, error) {
-                    return done(err);
+                    return done(error);
                   }
                 });
 
@@ -447,13 +447,13 @@ module.exports = function(passport) {
                             return done(null, user);
                           },
                           error: function(user, error) {
-                            return done(err);
+                            return done(error);
                           }
                         });
                     }
                   },
                   error: function(object, error) {
-                    return done(err);
+                    return done(error);
                   }
                 });
 
@@ -581,13 +581,13 @@ module.exports = function(passport) {
                             return done(null, user);
                           },
                           error: function(user, error) {
-                            return done(err);
+                            return done(error);
                           }
                         });
                     }
                   },
                   error: function(object, error) {
-                    return done(err);
+                    return done(error);
                   }
                 });
 
