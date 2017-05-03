@@ -1,8 +1,7 @@
 
-    var ParseServer       = require('parse-server').ParseServer;
-var ParseDashboard    = require('parse-dashboard');
 
 module.exports = function(app, passport) {
+
 
 // normal routes ===============================================================
 
@@ -13,8 +12,31 @@ module.exports = function(app, passport) {
 
     // PROFILE SECTION =========================
     app.get('/profile', isLoggedIn, function(req, res) {
-        res.render('profile.ejs', {
-            user : req.user
+        
+        // Clone res
+        var clone = JSON.parse(JSON.stringify(req.user));
+        var User = Parse.Object.extend("User");
+        var query = new Parse.Query(User);
+
+        if(clone.local) 
+            query.equalTo("local.email", clone.local.email);
+
+        if(clone.facebook) 
+            query.equalTo("facebook.token", clone.facebook.token);
+        
+        if(clone.twitter) 
+            query.equalTo("twitter.token", clone.twitter.token);
+        
+        query.first({
+          success: function(user) {
+            var clone = JSON.parse(JSON.stringify(user));
+            res.render('profile.ejs', {
+                user : clone
+            });
+          },
+          error: function(err) {
+            console.log("[PROFILE DEBUG] Error!");
+          }
         });
     });
 
@@ -24,39 +46,6 @@ module.exports = function(app, passport) {
         res.redirect('/');
     });
 
-
-    var api = new ParseServer({
-      databaseURI: 'mongodb://heroku_8dh30glq:t01pfrde5j5lfpkln7po6189gq@ds123331.mlab.com:23331/heroku_8dh30glq', // 'mongodb://localhost:27017/dev',
-      cloud: './app/main.js',
-      appId: 'APPLICATION_ID',
-      masterKey: 'MASTER_KEY', //Add your master key here. Keep it secret!
-      serverURL: 'https://skatsayoh.herokuapp.com/parse'  // Don't forget to change to https if needed
-    });
-
-
-    // Serve the Parse API on the /parse URL prefix
-    app.use('/parse', api);
-
-    var dashboard = new ParseDashboard({
-      "apps": [
-        {
-          "serverURL": 'https://skatsayoh.herokuapp.com/parse',
-          "appId": 'APPLICATION_ID',
-          "masterKey": 'MASTER_KEY',
-          "appName": "Asherah"
-        }
-      ],
-      "users": [
-        {
-          "user":"asherah",
-          "pass":"pass123"
-        }
-      ],
-      "trustProxy": 1
-    }, true);
-
-    // Dashboard
-    app.use('/dashboard', dashboard); // make the Parse Dashboard available at /dashboard
 // =============================================================================
 // AUTHENTICATE (FIRST LOGIN) ==================================================
 // =============================================================================
@@ -106,7 +95,7 @@ module.exports = function(app, passport) {
         app.get('/auth/twitter', passport.authenticate('twitter', { scope : 'email' }));
 
         // handle the callback after twitter has authenticated the user
-        app.get('/auth/twitter/callback',
+        app.get('/auth/callback/twitter',
             passport.authenticate('twitter', {
                 successRedirect : '/profile',
                 failureRedirect : '/'
@@ -119,7 +108,7 @@ module.exports = function(app, passport) {
         app.get('/auth/google', passport.authenticate('google', { scope : ['profile', 'email'] }));
 
         // the callback after google has authenticated the user
-        app.get('/auth/google/callback',
+        app.get('/auth/callback/google',
             passport.authenticate('google', {
                 successRedirect : '/profile',
                 failureRedirect : '/'
@@ -145,7 +134,7 @@ module.exports = function(app, passport) {
         app.get('/connect/facebook', passport.authorize('facebook', { scope : 'email' }));
 
         // handle the callback after facebook has authorized the user
-        app.get('/connect/facebook/callback',
+        app.get('/connect/callback/facebook',
             passport.authorize('facebook', {
                 successRedirect : '/profile',
                 failureRedirect : '/'
@@ -157,7 +146,7 @@ module.exports = function(app, passport) {
         app.get('/connect/twitter', passport.authorize('twitter', { scope : 'email' }));
 
         // handle the callback after twitter has authorized the user
-        app.get('/connect/twitter/callback',
+        app.get('/connect/callback/twitter',
             passport.authorize('twitter', {
                 successRedirect : '/profile',
                 failureRedirect : '/'
@@ -170,7 +159,7 @@ module.exports = function(app, passport) {
         app.get('/connect/google', passport.authorize('google', { scope : ['profile', 'email'] }));
 
         // the callback after google has authorized the user
-        app.get('/connect/google/callback',
+        app.get('/connect/callback/google',
             passport.authorize('google', {
                 successRedirect : '/profile',
                 failureRedirect : '/'
@@ -185,38 +174,86 @@ module.exports = function(app, passport) {
 
     // local -----------------------------------
     app.get('/unlink/local', isLoggedIn, function(req, res) {
-        var user            = req.user;
-        user.local.email    = undefined;
-        user.local.password = undefined;
-        user.save(function(err) {
-            res.redirect('/profile');
+        var user = req.user;
+        // user.set("local", {});
+        // user.local.token = undefined;
+        // user.save(function(err) {
+        //     res.redirect('/profile');
+        // });
+        user.save({ 
+            "local" : null
+        }, {
+            useMasterKey: true,
+            success: function(u) {
+                res.redirect('/profile');
+            },
+            error: function(error) {
+                res.redirect('/profile');
+            }
         });
     });
 
     // facebook -------------------------------
     app.get('/unlink/facebook', isLoggedIn, function(req, res) {
-        var user            = req.user;
-        user.facebook.token = undefined;
-        user.save(function(err) {
-            res.redirect('/profile');
+        var user = req.user;
+        // user.set("facebook", {});
+        // user.facebook.token = undefined;
+        // user.save(function(err) {
+        //     res.redirect('/profile');
+        // });
+        user.save({ 
+            "facebook" : null
+        }, {
+            useMasterKey: true,
+            success: function(u) {
+                res.redirect('/profile');
+            },
+            error: function(error) {
+                res.redirect('/profile');
+            }
         });
     });
 
     // twitter --------------------------------
     app.get('/unlink/twitter', isLoggedIn, function(req, res) {
-        var user           = req.user;
-        user.twitter.token = undefined;
-        user.save(function(err) {
-            res.redirect('/profile');
+        var user = req.user;
+        // user.set("twitter", {});
+        // // user.twitter.token = undefined;
+        // user.save(function(err) {
+        //     res.redirect('/profile');
+        // });
+
+        user.save({ 
+            "twitter" : null
+        }, {
+            useMasterKey: true,
+            success: function(u) {
+                res.redirect('/profile');
+            },
+            error: function(error) {
+                res.redirect('/profile');
+            }
         });
     });
 
     // google ---------------------------------
     app.get('/unlink/google', isLoggedIn, function(req, res) {
         var user          = req.user;
-        user.google.token = undefined;
-        user.save(function(err) {
-            res.redirect('/profile');
+        //user.google.token = undefined;
+        // user.save(function(err) {
+        //     res.redirect('/profile');
+        // });
+
+        user.save({ 
+            "google" : null 
+        }, {
+            useMasterKey: true,
+            success: function(u) {
+                res.redirect('/profile');
+            },
+            error: function(error) {
+                res.redirect('/profile');
+            }
         });
     });
 
@@ -230,3 +267,14 @@ function isLoggedIn(req, res, next) {
 
     res.redirect('/');
 }
+
+/*
+Parse.Cloud.beforeSave("MyClass", function(request, response) {
+  Parse.Session.current().then(function(session) {
+    if (session.get('restricted')) {
+      response.error('write operation not allowed');
+    }
+    response.success();
+  });
+});
+*/
