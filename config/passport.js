@@ -49,6 +49,160 @@ module.exports = function(passport) {
     });
 
     // =========================================================================
+    // LOCAL SIGNUP ============================================================
+    // =========================================================================
+    passport.use('local-signup', new LocalStrategy({
+        // by default, local strategy uses username and password, we will override with email
+        usernameField : 'email',
+        passwordField : 'password',
+        passReqToCallback : true // allows us to pass in the req from our route (lets us check if a user is logged in or not)
+    },
+    function(req, email, password, done) {
+        if (email)
+            email = email.toLowerCase(); // Use lower-case e-mails to avoid case-sensitive e-mail matching
+
+        // asynchronous
+        // process.nextTick(function() { // Encountered error if uncommented -- FIX ME!!
+            console.log("[LOCAL-SIGNUP DEBUG] Checking user [" + JSON.stringify(req.user) + "]");
+            // console.log("[LOCAL-SIGNUP DEBUG] Checking user local " + JSON.stringify(req.user.local));
+
+            // if the user is not already logged in:
+            if (!req.user) {
+                var User = Parse.Object.extend("User");
+                var query = new Parse.Query(User);
+                query.equalTo("local.email", email);
+                query.first({
+                  success: function(user) {
+                    // check to see if theres already a user with that email
+                    console.log("[LOCAL-SIGNUP DEBUG] Found User: " + JSON.stringify(user));
+                    if (user) {
+                        console.log("[LOCAL-SIGNUP DEBUG] Theres already a user with that email.")
+                        return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
+                    } else {
+                        console.log("[LOCAL-SIGNUP DEBUG] Adding new user...");
+                        var local = { 
+                            'email': email, 
+                            'password' : bcrypt.hashSync(password, bcrypt.genSaltSync(8), null)
+                        };
+
+                        var newUser = new Parse.User();
+                        newUser.set("username", email);
+                        newUser.set("password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
+                        newUser.set("local", local);
+
+                        newUser.signUp(null, {
+                          success: function(user) {
+                            return done(null, user);
+                          },
+                          error: function(user, error) {
+                            return done(error);
+                          }
+                        });
+                    }
+                  },
+                  error: function(object, error) {
+                    console.log("[LOCAL-SIGNUP DEBUG] Adding new user...");
+                    var local = { 
+                        'email': email, 
+                        'password' : bcrypt.hashSync(password, bcrypt.genSaltSync(8), null) 
+                    };
+
+                    var newUser = new Parse.User();
+                    newUser.set("username", email);
+                    newUser.set("password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
+                    newUser.set("local", local); 
+                    newUser.signUp(null, {
+                        success: function(user) {
+                            console.log("[LOCAL-SIGNUP DEBUG] Successfully signing up user " + JSON.stringify(user));
+                            return done(null, user);
+                        },
+                        error: function(user, error) {
+                            console.log("[LOCAL-SIGNUP DEBUG] Failed signing up user " + JSON.stringify(error));
+                            return done(error);
+                        }
+                    });
+                  }
+                });
+
+            } else if ( !req.user.local ) {
+                var User = Parse.Object.extend("User");
+                var query = new Parse.Query(User);
+                query.equalTo("local.email", email);
+                query.first({
+                  success: function(user) {
+                    // check to see if theres already a user with that email
+                    if (user) {
+                        /*
+                            But what if the user wants to link his existing account?
+                            Linking Users:
+                            user._linkWith('twitter', myAuthData).then(function(user){
+                                // user
+                            });
+                        */
+                        console.log("[LOCAL-SIGNUP DEBUG] Theres already a user with that email.")
+                        return done(null, false, req.flash('loginMessage', 'That email is already taken.'));
+                    } else {
+                        var local = { 
+                            "email": email, 
+                            "password" : bcrypt.hashSync(password, bcrypt.genSaltSync(8), null) 
+                        };
+
+                        var updateUser = req.user;
+                        console.log("[LOCAL-SIGNUP DEBUG] updateUser: " + JSON.stringify(updateUser));
+                        updateUser.save({ 
+                            "local" : local
+                        }, { 
+                            useMasterKey : true,
+                            success: function(u) {
+                                console.log("[LOCAL-SIGNUP DEBUG] Successfuly updating user " + JSON.stringify(user));
+                                return done(null, u);
+                            },  
+                            error: function(error) {
+                                console.log("[LOCAL-SIGNUP DEBUG] Error updating user " + JSON.stringify(error));
+                                return done(error);
+                            }
+                        });
+                    }
+                  },
+                  error: function(object, error) {
+                    console.log("[LOCAL-SIGNUP DEBUG] Error at if(!req.user.local) { ... } " + JSON.stringify(error));
+                    return done(error);
+                  }
+                });
+
+
+                // ...presumably they're trying to connect a local account
+                // BUT let's check if the email used to connect a local account is being used by another user
+                // User.findOne({ 'local.email' :  email }, function(err, user) {
+                //     if (err)
+                //         return done(err);
+                    
+                //     if (user) {
+                //         return done(null, false, req.flash('loginMessage', 'That email is already taken.'));
+                //         // Using 'loginMessage instead of signupMessage because it's used by /connect/local'
+                //     } else {
+                //         var user = req.user;
+                //         user.local.email = email;
+                //         user.local.password = user.generateHash(password);
+                //         user.save(function (err) {
+                //             if (err)
+                //                 return done(err);
+                            
+                //             return done(null,user);
+                //         });
+                //     }
+                // });
+            } else {
+                console.log("[LOCAL-SIGNUP DEBUG] User is logged in and already has a local account. Ignore signup. " +
+                    "(You should log out before trying to create a new account, user!)");
+                return done(null, req.user);
+            }
+
+        // });
+
+    }));
+
+    // =========================================================================
     // LOCAL LOGIN =============================================================
     // =========================================================================
     passport.use('local-login', new LocalStrategy({
@@ -110,149 +264,6 @@ module.exports = function(passport) {
     }));
 
     // =========================================================================
-    // LOCAL SIGNUP ============================================================
-    // =========================================================================
-    passport.use('local-signup', new LocalStrategy({
-        // by default, local strategy uses username and password, we will override with email
-        usernameField : 'email',
-        passwordField : 'password',
-        passReqToCallback : true // allows us to pass in the req from our route (lets us check if a user is logged in or not)
-    },
-    function(req, email, password, done) {
-        if (email)
-            email = email.toLowerCase(); // Use lower-case e-mails to avoid case-sensitive e-mail matching
-
-        // asynchronous
-        // process.nextTick(function() { // Encountered error if uncommented -- FIX ME!!
-            console.log("[LOCAL-SIGNUP DEBUG] Checking user [" + JSON.stringify(req.user) + "]");
-            // console.log("[LOCAL-SIGNUP DEBUG] Checking user local " + JSON.stringify(req.user.local));
-
-            // if the user is not already logged in:
-            if (!req.user) {
-                var User = Parse.Object.extend("User");
-                var query = new Parse.Query(User);
-                query.equalTo("local.email", email);
-                query.first({
-                  success: function(user) {
-                    // check to see if theres already a user with that email
-                    console.log("[LOCAL-SIGNUP DEBUG] Found User: " + JSON.stringify(user));
-                    if (user) {
-                        return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
-                    } else {
-                        console.log("[LOCAL-SIGNUP DEBUG] Adding new user...");
-                        var newUser = new Parse.User();
-                        newUser.set("username", email);
-                        newUser.set("password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
-                        newUser.set("local", { 'email': email, 'password' : bcrypt.hashSync(password, bcrypt.genSaltSync(8), null) });
-
-                        newUser.signUp(null, {
-                          success: function(user) {
-                            return done(null, user);
-                          },
-                          error: function(user, error) {
-                            return done(error);
-                          }
-                        });
-                    }
-                  },
-                  error: function(object, error) {
-                    console.log("[LOCAL-SIGNUP DEBUG] Adding new user...");
-
-                    var newUser = new Parse.User();
-                    newUser.set("username", email);
-                    newUser.set("password", bcrypt.hashSync(password, bcrypt.genSaltSync(8), null));
-                    newUser.set("local", { 'email': email, 'password' : bcrypt.hashSync(password, bcrypt.genSaltSync(8), null) }); 
-                    
-                    newUser.signUp(null, {
-                        success: function(user) {
-                            console.log("[LOCAL-SIGNUP DEBUG] Successfully signing up user " + JSON.stringify(user));
-                            return done(null, user);
-                        },
-                        error: function(user, error) {
-                            console.log("[LOCAL-SIGNUP DEBUG] Failed signing up user " + JSON.stringify(error));
-                            return done(error);
-                        }
-                    });
-                  }
-                });
-
-            } else if ( !req.user.local ) {
-                var User = Parse.Object.extend("User");
-                var query = new Parse.Query(User);
-                query.equalTo("local.email", email);
-                query.first({
-                  success: function(user) {
-                    // check to see if theres already a user with that email
-                    if (user) {
-                        // AAE - But what if the user wants to link his existing account?
-                        /*
-                            Linking Users:
-                            user._linkWith('twitter', myAuthData).then(function(user){
-                                // user
-                            });
-                        */
-                        return done(null, false, req.flash('loginMessage', 'That email is already taken.'));
-                    } else {
-
-                        var updateUser = req.user;
-                        console.log("[LOCAL-SIGNUP DEBUG] updateUser: " + JSON.stringify(updateUser));
-                        updateUser.save({ 
-                            "local" : { 
-                                "email": email, 
-                                "password" : bcrypt.hashSync(password, bcrypt.genSaltSync(8), null) 
-                            }
-                        }, { 
-                            useMasterKey : true,
-                            success: function(u) {
-                                console.log("[LOCAL-SIGNUP DEBUG] Successfuly updating user " + JSON.stringify(user));
-                                return done(null, u);
-                            },  
-                            error: function(error) {
-                                console.log("[LOCAL-SIGNUP DEBUG] Error updating user " + JSON.stringify(error));
-                                return done(error);
-                            }
-                        });
-                    }
-                  },
-                  error: function(object, error) {
-                    console.log("[LOCAL-SIGNUP DEBUG] Error at if(!req.user.local) { ... } " + JSON.stringify(error));
-                    return done(error);
-                  }
-                });
-
-
-                // ...presumably they're trying to connect a local account
-                // BUT let's check if the email used to connect a local account is being used by another user
-                // User.findOne({ 'local.email' :  email }, function(err, user) {
-                //     if (err)
-                //         return done(err);
-                    
-                //     if (user) {
-                //         return done(null, false, req.flash('loginMessage', 'That email is already taken.'));
-                //         // Using 'loginMessage instead of signupMessage because it's used by /connect/local'
-                //     } else {
-                //         var user = req.user;
-                //         user.local.email = email;
-                //         user.local.password = user.generateHash(password);
-                //         user.save(function (err) {
-                //             if (err)
-                //                 return done(err);
-                            
-                //             return done(null,user);
-                //         });
-                //     }
-                // });
-            } else {
-                console.log("[LOCAL-SIGNUP DEBUG] User is logged in and already has a local account. Ignore signup. " +
-                    "(You should log out before trying to create a new account, user!)");
-                return done(null, req.user);
-            }
-
-        // });
-
-    }));
-
-    // =========================================================================
     // FACEBOOK ================================================================
     // =========================================================================
     var fbStrategy = configAuth.facebookAuth;
@@ -284,9 +295,11 @@ module.exports = function(passport) {
                             user.save({ "facebook" : fb }, {
                                 useMasterKey: true,
                                 success: function(u) {
+                                    console.log("[FB DEBUG] Successfully re-linked user accounts [" + JSON.stringify(user) + "]");
                                     return done(null, u);
                                 },
                                 error: function(error) {
+                                    console.log("[FB DEBUG] Failed re-linking user accounts [" + JSON.stringify(error) + "]");
                                     return done(error);
                                 }
                             });
@@ -310,11 +323,11 @@ module.exports = function(passport) {
                         newUser.set("facebook", fb);
                         newUser.signUp(null, {
                           success: function(user) {
-                            console.log("[FB DEBUG] Successfully signup user " + JSON.stringify(user));
+                            console.log("[FB DEBUG] Successfully signup user [" + JSON.stringify(user) + "]");
                             return done(null, user);
                           },
                           error: function(user, error) {
-                            console.log("[FB DEBUG] Failed signup user " + JSON.stringify(user));
+                            console.log("[FB DEBUG] Failed signing up user [" + JSON.stringify(error) + "]");
                             return done(error);
                           }
                         });
@@ -330,19 +343,23 @@ module.exports = function(passport) {
             
             // user already exists and is logged in, we have to link accounts
             var updateUser = req.user;
-            var fb = { 
+            var facebook = { 
                 "id" : profile.id,
                 "token": token,
                 "name": profile.name.givenName + ' ' + profile.name.familyName,
                 "email": (profile.emails[0].value || '').toLowerCase()
             };
 
-            updateUser.save({ "facebook": fb }, {
+            updateUser.save({ 
+                "facebook": facebook 
+            }, {
                 useMasterKey: true,
                 success: function(user) {
+                    console.log("[FB DEBUG] Successfully linking user accounts [" + JSON.stringify(user) + "]");
                     return done(null, user);
                 },
                 error: function(error) {
+                    console.log("[FB DEBUG] Failed linking user accounts [" + JSON.stringify(error) + "]");
                     return done(error);
                 }
             });
@@ -375,27 +392,32 @@ module.exports = function(passport) {
                     // check to see if theres already a user with that email
                     if (user) {
                         // if there is a user id already but no token (user was linked at one point and then removed)
-                        if (!user.twitter.token) {
-                            var tw = {
+                        if (!user.get("twitter").token) {
+                            var twitter = {
                                 "token": token,
                                 "username": profile.username,
                                 "displayName": profile.displayName
                             };
 
                             user.save({ 
-                                "twitter" : tw 
+                                "twitter" : twitter 
                             }, {
                                 useMasterKey: true,
-                                success: function(u) {
-                                    return done(null, u);
+                                success: function(user) {
+                                    console.log("[TWITTER DEBUG] Successfully re-linked user [" + JSON.stringify(user) + "]");
+                                    return done(null, user);
                                 },
                                 error: function(error) {
+                                    console.log("[TWITTER DEBUG] Failed re-linking user [" + JSON.stringify(error) + "]");
                                     return done(error);
                                 }
                             });
                         }
+                        else 
+                            return done(null, user);
+
                     } else {
-                        var tw = {
+                        var twitter = {
                             "id": profile.id,
                             "token": token,
                             "username": profile.username,
@@ -403,19 +425,23 @@ module.exports = function(passport) {
                         };
 
                         var newUser = new Parse.User();
-                        newUser.set("twitter", tw);
-
+                        newUser.set("twitter", twitter);
+                        newUser.set("username", profile.id);
+                        newUser.set("password", token);
                         newUser.signUp(null, {
                           success: function(user) {
+                            console.log("[TWITTER DEBUG] Successfully signed up user [" + JSON.stringify(user) + "]");
                             return done(null, user);
                           },
                           error: function(user, error) {
+                            console.log("[TWITTER DEBUG] Failed signing up user [" + JSON.stringify(error) + "]");
                             return done(error);
                           }
                         });
                     }
                   },
                   error: function(object, error) {
+                    console.log("[TWITTER DEBUG] ERROR [" + JSON.stringify(error) + "]");
                     return done(error);
                   }
                 });
@@ -459,7 +485,7 @@ module.exports = function(passport) {
                 // });
 
             } else {
-                var tw = {
+                var twitter = {
                     "id": profile.id,
                     "token": token,
                     "username": profile.username,
@@ -469,13 +495,15 @@ module.exports = function(passport) {
                 // user already exists and is logged in, we have to link accounts
                 var user = req.user; // pull the user out of the session
                 user.save({
-                    "twitter" : tw
+                    "twitter" : twitter
                 }, {
                     useMasterKey: true,
-                    success: function(u) {
-                        return done(null, u);
+                    success: function(user) {
+                        console.log("[TWITTER DEBUG] Successfully linked user [" + JSON.stringify(user) + "]");
+                        return done(null, user);
                     },
                     error: function(error) {
+                        console.log("[TWITTER DEBUG] Failed linking user [" + JSON.stringify(error) + "]");
                         return done(error);
                     }
                 });
@@ -492,141 +520,175 @@ module.exports = function(passport) {
 
     }));
 
-//     // =========================================================================
-//     // GOOGLE ==================================================================
-//     // =========================================================================
-//     passport.use(new GoogleStrategy({
+    // =========================================================================
+    // GOOGLE ==================================================================
+    // =========================================================================
+    passport.use(new GoogleStrategy({
 
-//         clientID        : configAuth.googleAuth.clientID,
-//         clientSecret    : configAuth.googleAuth.clientSecret,
-//         callbackURL     : configAuth.googleAuth.callbackURL,
-//         passReqToCallback : true // allows us to pass in the req from our route (lets us check if a user is logged in or not)
+        clientID        : configAuth.googleAuth.clientID,
+        clientSecret    : configAuth.googleAuth.clientSecret,
+        callbackURL     : configAuth.googleAuth.callbackURL,
+        passReqToCallback : true // allows us to pass in the req from our route (lets us check if a user is logged in or not)
 
-//     },
-//     function(req, token, refreshToken, profile, done) {
+    },
+    function(req, token, refreshToken, profile, done) {
 
-//         // asynchronous
-//         process.nextTick(function() {
+        // asynchronous
+        //process.nextTick(function() {
 
-//             // check if the user is already logged in
-//             if (!req.user) {
-//                 var query = new Parse.Query('User');
-//                 query.get({ 'google.id' : profile.id }, {
-//                   success: function(user) {
-//                     // check to see if theres already a user with that email
-//                     if (user) {
-//                         // if there is a user id already but no token (user was linked at one point and then removed)
-//                         if (!user.google.token) {
-//                             user.save({
-//                                 "google.token" : token,
-//                                 "google.name": profile.displayName,
-//                                 "google.email": (profile.emails[0].value || '').toLowerCase()
-//                             }, {
-//                                 success: function(u) {
-//                                  return done(null, u);
-//                               },
-//                                 error: function(error) {
-//                                 return done(error);
-//                               }
-//                             });
-//                         }
-//                     } else {
+            // check if the user is already logged in
+            if (!req.user) {
+                var User = Parse.Object.extend("User");
+                var query = new Parse.Query(User);
+                query.equalTo("google.id", profile.id);
+                query.first({
+                  success: function(user) {
+                    console.log("[GOOGLE DEBUG] User:"+ JSON.stringify(user));
+                    // check to see if theres already a user with that email
+                    if (user) {
+                        // if there is a user id already but no token (user was linked at one point and then removed)
+                        if (!user.get("google").token) {
+                            console.log("00000");
+                            var google = {
+                                "token": token,
+                                "name": profile.displayName,
+                                "email": (profile.emails[0].value || '').toLowerCase()
+                            };
 
-//                         var newUser = new Parse.User();
-//                         newUser.set("google.id", profile.id);
-//                         newUser.set("google.token", token);
-//                         newUser.set("google.name", profile.username);
-//                         newUser.set("google.email", profile.displayName);
+                            user.save({
+                                "google": google
+                            }, {
+                                useMasterKey: true,
+                                success: function(user) {
+                                    console.log("[GOOGLE DEBUG] Successfully updated user info [" + JSON.stringify(user) + "]");
+                                    return done(null, user);
+                                },
+                                error: function(error) {
+                                    console.log("[GOOGLE DEBUG] Failed updating user info [" + JSON.stringify(error) + "]");
+                                    return done(error);
+                                }
+                            });
+                        }
+                        else {
+                            console.log("11111");
+                            return done(null, user);
+                        }
 
-//                         newUser.signUp(null, {
-//                           success: function(user) {
-//                             return done(null, user);
-//                           },
-//                           error: function(user, error) {
-//                             return done(error);
-//                           }
-//                         });
-//                     }
-//                   },
-//                   error: function(object, error) {
-//                     return done(error);
-//                   }
-//                 });
+                    } else {
+                        console.log("[GOOGLE DEBUG] User does not exists..Creating user..");
+                        var google = {
+                            "id": profile.id,
+                            "token": token,
+                            "name": profile.displayName,
+                            "email": (profile.emails[0].value || '').toLowerCase()
+                        };
+
+                        var newUser = new Parse.User();
+                        newUser.set("google", google);
+                        newUser.set("username", profile.id);
+                        newUser.set("password", token);
+                        newUser.signUp(null, {
+                          success: function(user) {
+                            console.log("[GOOGLE DEBUG] Successfully created user [" + JSON.stringify(user) + "]");
+                            return done(null, user);
+                          },
+                          error: function(user, error) {
+                            console.log("[GOOGLE DEBUG] Failed creating user [" + JSON.stringify(error) + "]");
+                            return done(error);
+                          }
+                        });
+                    }
+                  },
+                  error: function(object, error) {
+                    console.log("[GOOGLE DEBUG] ERROR [" + JSON.stringify(error) + "]");
+                    return done(error);
+                  }
+                });
 
 
-//                 // User.findOne({ 'google.id' : profile.id }, function(err, user) {
-//                 //     if (err)
-//                 //         return done(err);
+                // User.findOne({ 'google.id' : profile.id }, function(err, user) {
+                //     if (err)
+                //         return done(err);
 
-//                 //     if (user) {
+                //     if (user) {
 
-//                 //         // if there is a user id already but no token (user was linked at one point and then removed)
-//                 //         if (!user.google.token) {
-//                 //             user.google.token = token;
-//                 //             user.google.name  = profile.displayName;
-//                 //             user.google.email = (profile.emails[0].value || '').toLowerCase(); // pull the first email
+                //         // if there is a user id already but no token (user was linked at one point and then removed)
+                //         if (!user.google.token) {
+                //             user.google.token = token;
+                //             user.google.name  = profile.displayName;
+                //             user.google.email = (profile.emails[0].value || '').toLowerCase(); // pull the first email
 
-//                 //             user.save(function(err) {
-//                 //                 if (err)
-//                 //                     return done(err);
+                //             user.save(function(err) {
+                //                 if (err)
+                //                     return done(err);
                                     
-//                 //                 return done(null, user);
-//                 //             });
-//                 //         }
+                //                 return done(null, user);
+                //             });
+                //         }
 
-//                 //         return done(null, user);
-//                 //     } else {
-//                 //         var newUser          = new User();
+                //         return done(null, user);
+                //     } else {
+                //         var newUser          = new User();
 
-//                 //         newUser.google.id    = profile.id;
-//                 //         newUser.google.token = token;
-//                 //         newUser.google.name  = profile.displayName;
-//                 //         newUser.google.email = (profile.emails[0].value || '').toLowerCase(); // pull the first email
+                //         newUser.google.id    = profile.id;
+                //         newUser.google.token = token;
+                //         newUser.google.name  = profile.displayName;
+                //         newUser.google.email = (profile.emails[0].value || '').toLowerCase(); // pull the first email
 
-//                 //         newUser.save(function(err) {
-//                 //             if (err)
-//                 //                 return done(err);
+                //         newUser.save(function(err) {
+                //             if (err)
+                //                 return done(err);
                                 
-//                 //             return done(null, newUser);
-//                 //         });
-//                 //     }
-//                 // });
+                //             return done(null, newUser);
+                //         });
+                //     }
+                // });
 
-//             } else {
-//                 // user already exists and is logged in, we have to link accounts
-//                 user.save({
-//                     "google.id" : profile.id,
-//                     "google.token" : token,
-//                     "google.name": profile.displayName,
-//                     "google.email": (profile.emails[0].value || '').toLowerCase()
-//                 }, {
-//                     success: function(u) {
-//                      return done(null, u);
-//                   },
-//                     error: function(error) {
-//                     return done(error);
-//                   }
-//                 });
+            } else {
 
-//                 // var user               = req.user; // pull the user out of the session
+                // user already exists and is logged in, we have to link accounts
+                var google = {
+                    "id": profile.id,
+                    "token": token,
+                    "name": profile.displayName,
+                    "email": (profile.emails[0].value || '').toLowerCase()
+                };
 
-//                 // user.google.id    = profile.id;
-//                 // user.google.token = token;
-//                 // user.google.name  = profile.displayName;
-//                 // user.google.email = (profile.emails[0].value || '').toLowerCase(); // pull the first email
+                // user already exists and is logged in, we have to link accounts
+                var user = req.user; // pull the user out of the session
+                user.save({
+                    "google" : google
+                }, {
+                    useMasterKey: true,
+                    success: function(user) {
+                        console.log("[GOOGLE DEBUG] Successfully linked user [" + JSON.stringify(user) + "]");
+                        return done(null, user);
+                    },
+                    error: function(error) {
+                        console.log("[GOOGLE DEBUG] Failed linking user [" + JSON.stringify(error) + "]");
+                        return done(error);
+                    }
+                });
 
-//                 // user.save(function(err) {
-//                 //     if (err)
-//                 //         return done(err);
+                // var user               = req.user; // pull the user out of the session
+
+                // user.google.id    = profile.id;
+                // user.google.token = token;
+                // user.google.name  = profile.displayName;
+                // user.google.email = (profile.emails[0].value || '').toLowerCase(); // pull the first email
+
+                // user.save(function(err) {
+                //     if (err)
+                //         return done(err);
                         
-//                 //     return done(null, user);
-//                 // });
+                //     return done(null, user);
+                // });
 
-//             }
+            }
 
-//         });
+    //    });
 
-//     }));
+    }));
 
  };
 

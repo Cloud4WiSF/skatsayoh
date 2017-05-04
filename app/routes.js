@@ -26,6 +26,9 @@ module.exports = function(app, passport) {
         
         if(clone.twitter) 
             query.equalTo("twitter.token", clone.twitter.token);
+
+        if(clone.google) 
+            query.equalTo("google.token", clone.google.token);
         
         query.first({
           success: function(user) {
@@ -238,7 +241,7 @@ module.exports = function(app, passport) {
 
     // google ---------------------------------
     app.get('/unlink/google', isLoggedIn, function(req, res) {
-        var user          = req.user;
+        var user = req.user;
         //user.google.token = undefined;
         // user.save(function(err) {
         //     res.redirect('/profile');
@@ -269,6 +272,7 @@ function isLoggedIn(req, res, next) {
 }
 
 /*
+Some idea to check user is logged in via server
 Parse.Cloud.beforeSave("MyClass", function(request, response) {
   Parse.Session.current().then(function(session) {
     if (session.get('restricted')) {

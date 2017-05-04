@@ -18,9 +18,9 @@ module.exports = {
     },
 
     'googleAuth' : {
-        'clientID'         : 'your-secret-clientID-here',
-        'clientSecret'     : 'your-client-secret-here',
-        'callbackURL'      : 'http://skatsayoh.herokuapp.com/auth/google/callback'
+        'clientID'         : '242371238686-ka8bfn7ov7i8abbqttdfkbfmjh97rorn.apps.googleusercontent.com',
+        'clientSecret'     : 'ioguUm5wBd9owyElkEcKe1EL',
+        'callbackURL'      : 'http://localhost:3000/auth/callback/google'
     }
 
 };
